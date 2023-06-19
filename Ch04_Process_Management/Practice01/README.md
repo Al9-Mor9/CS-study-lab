@@ -93,7 +93,7 @@ I am parent process. I got value of 78411 from fork() function
 
 int main(){
     int PID = fork();
-		int x = 123;
+	int x = 123;
 
     if (PID == 0){//PID가 0이면 자식 프로세스
         x++;
@@ -109,5 +109,54 @@ int main(){
 위 코드를 실행하면 자식 프로세스의 `x`는 124, 부모 프로세스의 `x`는 122가 됐음을 알 수 있습니다. 자식 프로세스는 123이라는 처음에는 부모의 `x` 값을 복제하지만 이후 둘은 별개의 메모리 공간을 가지는, 서로 다른 프로세스가 됐기 때문입니다. 
 
 ### 1-2. 자식 프로세스에서 외부 프로그램을 실행해보자
+이번에는 `exec()` 시스템 콜에 대해서 알아봅시다. 터미널에서 `man exec` 명령어를 입력해보면 NAME에 많은 함수들이 있는데, 이들이 모두 `exec()` 계열의 함수들입니다. 그 중 하나인 `execve()`는 다음과 같습니다.  
+```c
+#include <unistd.h>
+int execve(const char *filename, const char *argv[], const char *envp[]);
+//Does not return if OK; returns −1 on error
+```
+`exec()`계열 함수들은 현재 프로세스에 기존에 있는 프로그램들을 올리고 실행하는 함수들로, 그 특징은 **오류가 있을 때만 -1을 리턴하고 그렇지 않으면 리턴을 하지 않는다는 점**입니다.
+아래의 코드를 실행하기 전에, 터미널에 `ls -a`를 입력해봅시다. 현재 디렉토리의 모든 디렉토리,파일(하위 디렉토리의 것들은 제외)이 출력됩니다.
+그럼 다음의 코드를 실행해봅시다.
+
+```c
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+
+int main(){
+    int PID = fork();
+    int x = 0;
+
+    if (PID == 0){//PID가 0이면 자식 프로세스
+        x++;
+        char *args[] = {"ls", "-a", NULL};
+        printf("I am child process. my x is %d\n", x);
+        if (execve("/bin/ls", args, NULL) < -1) {
+            printf("error!\n");
+        };
+        printf("exec end!");
+        printf("exec end!");
+        printf("exec end!");
+        printf("exec end!");
+        printf("exec end!");
+        printf("exec end!");
+        printf("exec end!");
+    }
+    else if (PID > 0){//PID > 0이면 부모 프로세스. PID는 자식 프로세스의 PID
+        x--;
+        printf("I am parent process. my x is %d\n", x);
+    }
+}
+```
+```
+(출력 예)
+I am parent process. my x is -1
+I am child process. my x is 1
+.  ..  .idea  .vscode  a.out  javaPS  lab  lab.c  main  main.cpp
+```
+리눅스에서 `ls`와 같은 명령어들은 사실 `/bin/ls`와 같은 곳에 있는 프로그램들을 실행시키는 것이기에, 위 코드는 사실 터미널에서 `ls -a` 명령어를 쳤던 것을 c의 코드에서 동작시킨 것과 같다고 할 수 있습니다.  
+그런데 프로그램을 실행시켰을 때 보면, `execve()`가 호출된 이후 아래의 "exec end!"라는 문자열은 단 한 번도 출력되지 않음을 알 수 있습니다. `exec()` 계열은 특정 프로그램을 로드해 실행하고는 **리턴하지 않기 때문**입니다.
+
 
 ## 2. 프로세스 종료
