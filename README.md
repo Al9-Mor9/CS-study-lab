@@ -1,8 +1,10 @@
 # CS-study-lab
-CS 스터디 실습을 위한 레포지토리입니다.   
-실습에서는 C를 주언어로, Linux(Ubuntu) 환경에서 이루어집니다. 
+CS 스터디 실습을 위한 레포지토리입니다.
 
-<details><summary> <h3>Windows에서 Ubuntu 쓰기(WSL2)</h3> </summary>
+앞으로의 CS 스터디는 C언어를 이용해서, 리눅스 Ubuntu 환경에서 이루어집니다. Windows 환경에서 Ubuntu를 쓰는 방법이 아래에 적혀 있으니 참고해서 설치해주시기를 바랍니다.
+
+<details>
+    <summary>Windows에서 Ubuntu 쓰기(WSL2)</summary>
 
 ```markdown
 - WSL2을 이용한 리눅스 설치
@@ -65,4 +67,8 @@ wsl --set-default-version 2
 
 ![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/daead382-7e86-4095-afd6-1bc61bee7397/Untitled.png)
 </details>
+
+
+
+
  
