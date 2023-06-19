@@ -160,7 +160,70 @@ I am child process. my x is 1
 
 ### 1-3 자식 프로세스가 완료될 때까지 부모 프로세스를 기다리게 해보자
 
+이번에는 `wait()`입니다. 
 
+```c
+#include <sys/types.h>
+#include <sys/wait.h>
+pid_t wait(int *statusp);
+//Returns: PID of child if OK or −1 on error
+```
+
+터미널에 `man wait`을 입력해보면 `wait(&status)` 는 `waitpid(-1, &status, 0)`와 같다는 말을 볼 수 있는데, `waitpid()`는 다음과 같습니다.
+
+```c
+#include <sys/types.h>
+#include <sys/wait.h>
+pid_t waitpid(pid_t pid, int *statusp, int options);
+//Returns: PID of child if OK, 0 (if WNOHANG), or −1 on error
+```
+
+이 `waitpid()`는 이 함수를 호출한 프로세스를 인자로 주어진 pid를 PID로 가지는 자식 프로세스의 상태가 변할 때까지 대기시키는 함수입니다. 기본적으로는 해당하는 자식 프로세스가 종료할 때까지 부모 프로세스를 대기시키지만, 이는 options의 값을 바꿔줌으로써 바꿀 수도 있습니다. (`man wait` 또는 CSAPP 책 참고)
+
+인자로 주어지는 pid의 값에 따라 이 함수를 호출하는 프로세스가 기다릴 대상을 지정해줄 수도 있습니다.
+
+```
+pid_t pid 값이...
+	<-1인 경우	: 이 pid의 절댓값을 PID로 가지는 프로세스와 같은 그룹 ID를 가지는 프로세스들을 기다림
+	-1인 경우	: 모든 자식 프로세스들을 기다림
+	0인 경우	: waitpid()를 콜한 시점에, waitpid()를 콜한 프로세서와 같은 그룹 ID를 가지는 프로세스들을 기다림
+	>0인 경우	: 해당 pid의 프로세스를 기다림.
+```
+
+아래의 코드를 실행해봅시다.
+
+```c
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <wait.h>
+
+int main(){
+    int PID = fork();
+
+    if (PID == 0){//PID가 0이면 자식 프로세스
+        printf("I am child process. I got %d from fork() function\n", PID);
+		printf("I am child process. I got %d from fork() function\n", PID);
+        printf("I am child process. I got %d from fork() function\n", PID);
+		printf("I am child process. I got %d from fork() function\n", PID);
+        printf("I am child process. I got %d from fork() function\n", PID);
+		printf("I am child process. I got %d from fork() function\n", PID);
+    }
+    else if (PID > 0){//PID > 0이면 부모 프로세스. PID는 자식 프로세스의 PID
+        //wait(0);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+        printf("I am parent process. I got %d from fork() function\n", PID);
+    }
+}
+```
+
+위 코드를 돌려보면 "I am parent process. ..."와 "I am child process. ..."가 서로 섞여서 출력됩니다. 부모 프로세스와 자식 프로세스가 동시에 돌아가기 때문입니다.
+
+이번에는 `wait(0)`의 주석 처리를 지워보고 위 코드를 돌려보면, 몇 번을 돌려도 "I am child process. ..."들이 먼저 출력되고 나서 차례로 "I am parent process. ..."들이 출력됩니다. 부모 프로세스가 자식 프로세스가 종료될 때까지 기다리기 때문입니다. 따라서 `wait(0)`을 쓴다면 하림이처럼 위아래 모르고 세상이 거꾸로 돌아가는 일을 막고 프로세스의 순서를 제어할 수 있습니다.
 
 
 
